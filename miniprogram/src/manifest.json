@@ -1,0 +1,23 @@
+{
+  "name": "内部调度",
+  "appid": "__UNI__TASKHUB",
+  "description": "内部调度小程序工程骨架",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "uniStatistics": { "enable": false },
+  "h5": {
+    "title": "内部调度"
+  },
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": true,
+      "es6": true,
+      "minified": true,
+      "postcss": true
+    },
+    "usingComponents": true
+  },
+  "vueVersion": "3"
+}

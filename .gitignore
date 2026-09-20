@@ -1,1 +1,13 @@
 .DS_Store
+node_modules/
+dist/
+target/
+coverage/
+.env
+.env.local
+.env.*.local
+*.log
+.idea/
+*.iml
+.worktrees/
+project.private.config.json

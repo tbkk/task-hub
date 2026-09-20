@@ -1,0 +1,13 @@
+{
+  "appid": "",
+  "compileType": "miniprogram",
+  "libVersion": "trial",
+  "miniprogramRoot": "dist/dev/mp-weixin/",
+  "projectname": "task-hub-miniprogram",
+  "setting": {
+    "checkSiteMap": false,
+    "es6": true,
+    "minified": true,
+    "postcss": true
+  }
+}

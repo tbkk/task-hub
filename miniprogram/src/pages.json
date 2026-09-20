@@ -1,0 +1,80 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "内部调度"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/messages/index",
+      "style": {
+        "navigationBarTitleText": "消息"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "subpackages/worker",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationBarTitleText": "工人工作区"
+          }
+        }
+      ]
+    },
+    {
+      "root": "subpackages/warehouse",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationBarTitleText": "仓库工作区"
+          }
+        }
+      ]
+    },
+    {
+      "root": "subpackages/dispatch",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationBarTitleText": "调度工作区"
+          }
+        }
+      ]
+    },
+    {
+      "root": "subpackages/overview",
+      "pages": [
+        {
+          "path": "index",
+          "style": {
+            "navigationBarTitleText": "业务概览"
+          }
+        }
+      ]
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "内部调度",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f6f8fb"
+  }
+}
