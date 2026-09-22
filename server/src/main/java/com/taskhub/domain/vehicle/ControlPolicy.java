@@ -12,14 +12,20 @@ public final class ControlPolicy {
   public static List<Blocker> blockers(Context c, boolean go) {
     var out = new ArrayList<Blocker>();
     if (!Boolean.TRUE.equals(c.online()) || !Boolean.TRUE.equals(c.fresh())) out.add(new Blocker("VEHICLE_STALE", "车辆在线或状态已过期"));
-    if (go && (!Objects.equals(c.currentStopId(), c.expectedStopId()) || !"ATSTOP".equals(c.businessStatus()))) out.add(new Blocker("TASK_MISMATCH", "车辆未在当前任务停靠点"));
+    if (go && (!"AT_STOP".equals(c.taskState()) || !Objects.equals(c.currentStopId(), c.expectedStopId()) || !"ATSTOP".equals(c.businessStatus()))) out.add(new Blocker("TASK_MISMATCH", "车辆未在当前任务停靠点"));
     if (go && (c.nextStopId() == null || c.nextStopId().isBlank())) out.add(new Blocker("NO_NEXT_STOP", "没有下一停靠点"));
-    if (go) for (int i=0;i<c.doorStatuses().size();i++) {
-      if (!Boolean.TRUE.equals(c.doorFresh().get(i)) || c.doorStatuses().get(i) == null || "UNKNOWN".equals(c.doorStatuses().get(i))) out.add(new Blocker("DOOR_UNKNOWN", "存在状态未知或过期格口门"));
-      else if ("OPEN".equals(c.doorStatuses().get(i))) out.add(new Blocker("DOOR_OPEN", "存在未关闭格口门"));
-      else if (!"CLOSED".equals(c.doorStatuses().get(i))) out.add(new Blocker("DOOR_UNKNOWN", "存在状态未知格口门"));
+    if (go) {
+      var statuses = c.doorStatuses() == null ? List.<String>of() : c.doorStatuses();
+      var fresh = c.doorFresh() == null ? List.<Boolean>of() : c.doorFresh();
+      if (statuses.isEmpty()) out.add(new Blocker("DOOR_UNKNOWN", "没有可核对的格口门"));
+      for (int i = 0; i < statuses.size(); i++) {
+        String door = statuses.get(i);
+        if (i >= fresh.size() || !Boolean.TRUE.equals(fresh.get(i)) || door == null || "UNKNOWN".equals(door)) out.add(new Blocker("DOOR_UNKNOWN", "存在状态未知或过期格口门"));
+        else if ("OPEN".equals(door)) out.add(new Blocker("DOOR_OPEN", "存在未关闭格口门"));
+        else if (!"CLOSED".equals(door)) out.add(new Blocker("DOOR_UNKNOWN", "存在状态未知格口门"));
+      }
     }
-    if (go && c.orderStatuses().stream().anyMatch(s -> !"COMPLETED".equals(s))) out.add(new Blocker("ORDER_NOT_PICKED", "当前停靠点订单尚未全部取货"));
+    if (go && (c.orderStatuses() == null || c.orderStatuses().isEmpty() || c.orderStatuses().stream().anyMatch(s -> !"COMPLETED".equals(s)))) out.add(new Blocker("ORDER_NOT_PICKED", "当前停靠点订单尚未全部取货"));
     if (c.activeTicket()) out.add(new Blocker("ACTIVE_TICKET", "存在活动工单"));
     if (c.unknownControl()) out.add(new Blocker("UNKNOWN_CONTROL", "已有未知控制请求，请先核对"));
     if (!go && (c.speed() == null || c.speed().signum() != 0)) out.add(new Blocker("VEHICLE_MOVING", "车辆速度未知或不为零"));

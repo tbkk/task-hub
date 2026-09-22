@@ -183,8 +183,17 @@ public class TicketService {
     return rows.isEmpty() ? null : (String) rows.get(0).get("vehicle_id");
   }
 
+  private String batchForOrder(String order) {
+    var rows = db.queryForList(
+        "SELECT batch_id FROM active_order_batch WHERE order_id=?", order);
+    return rows.isEmpty() ? null : (String) rows.get(0).get("batch_id");
+  }
+
   private void lockOrderContext(String order) {
+    String batch = batchForOrder(order);
     String vehicle = vehicleForOrder(order);
+    // 与车辆控制共用 batch → vehicle → task → order 的锁顺序，避免 go 与工单创建互相等待。
+    if (batch != null) db.queryForList("SELECT id FROM batch WHERE id=? FOR UPDATE", batch);
     if (vehicle != null) {
       db.queryForList("SELECT id FROM vehicle WHERE id=? FOR UPDATE", vehicle);
       db.queryForList(
