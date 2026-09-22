@@ -1,27 +1,45 @@
 {
   "pages": [
     {
-      "path": "pages/index/index",
+      "path": "pages/login/index",
       "style": {
-        "navigationBarTitleText": "内部调度"
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
       }
     },
     {
-      "path": "pages/login/index",
+      "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "登录"
+        "navigationBarTitleText": "内部调度",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/phone/index",
+      "style": {
+        "navigationBarTitleText": "手机号验证",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/messages/index",
       "style": {
-        "navigationBarTitleText": "消息"
+        "navigationBarTitleText": "消息",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/profile/index",
       "style": {
-        "navigationBarTitleText": "我的"
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/workspace/index",
+      "style": {
+        "navigationBarTitleText": "切换工作区",
+        "navigationStyle": "custom"
       }
     }
   ],
@@ -32,7 +50,57 @@
         {
           "path": "index",
           "style": {
-            "navigationBarTitleText": "工人工作区"
+            "navigationBarTitleText": "工人工作区",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "destination",
+          "style": {
+            "navigationBarTitleText": "选择目的地",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "slot",
+          "style": {
+            "navigationBarTitleText": "预约配送时段",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "favorites",
+          "style": {
+            "navigationBarTitleText": "常用停靠点",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "result",
+          "style": {
+            "navigationBarTitleText": "申请提交结果",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "orders",
+          "style": {
+            "navigationBarTitleText": "我的订单",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "order-detail",
+          "style": {
+            "navigationBarTitleText": "订单详情",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "cancellation",
+          "style": {
+            "navigationBarTitleText": "取消申请",
+            "navigationStyle": "custom"
           }
         }
       ]
@@ -43,7 +111,29 @@
         {
           "path": "index",
           "style": {
-            "navigationBarTitleText": "仓库工作区"
+            "navigationBarTitleText": "仓库工作区",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "order-review",
+          "style": {
+            "navigationBarTitleText": "申请审批",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "batches",
+          "style": {
+            "navigationBarTitleText": "配送批次",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "batch-edit",
+          "style": {
+            "navigationBarTitleText": "批次编辑",
+            "navigationStyle": "custom"
           }
         }
       ]
@@ -54,7 +144,8 @@
         {
           "path": "index",
           "style": {
-            "navigationBarTitleText": "调度工作区"
+            "navigationBarTitleText": "调度工作区",
+            "navigationStyle": "custom"
           }
         }
       ]
@@ -65,7 +156,8 @@
         {
           "path": "index",
           "style": {
-            "navigationBarTitleText": "业务概览"
+            "navigationBarTitleText": "业务概览",
+            "navigationStyle": "custom"
           }
         }
       ]

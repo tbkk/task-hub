@@ -1,13 +1,22 @@
 server:
   port: ${SERVER_PORT:8080}
 
+taskhub:
+  notifications:
+    delivery-enabled: ${NOTIFICATIONS_ENABLED:false}
+  vehicle:
+    simulator-enabled: ${SIMULATOR_ENABLED:false}
+
 spring:
+  flyway:
+    enabled: ${TASKHUB_MIGRATIONS_ENABLED:false}
+    clean-disabled: true
   application:
     name: task-hub-server
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:task_hub}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:task_hub}?useUnicode=true&characterEncoding=utf8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
     username: ${MYSQL_USER:taskhub}
     password: ${MYSQL_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver

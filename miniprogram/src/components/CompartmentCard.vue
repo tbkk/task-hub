@@ -1,0 +1,3 @@
+<script setup lang="ts">import { doorStatusText,type DoorStatus } from '@/features/common/presentation';defineProps<{ label:string;status:DoorStatus;enabled?:boolean }>()</script>
+<template><view class="compartment" :class="{disabled:enabled===false}"><text class="label">{{ label }}</text><text class="status">{{ enabled === false ? '已停用' : doorStatusText(status) }}</text></view></template>
+<style scoped>.compartment{display:flex;justify-content:space-between;gap:12px;padding:14px;background:#fff;border:1px solid #e4e8ef;border-radius:8px}.disabled{opacity:.55}.label{font-size:14px}.status{color:#667387;font-size:12px}</style>

@@ -1,0 +1,11 @@
+@use '@/styles/tokens.scss' as *;
+.auth-page { min-height: 100vh; background: $color-background; color: $color-text; padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+.auth-title { display: block; margin: 0; font-size: 24px; line-height: 34px; font-weight: 700; }
+.auth-subtitle { display: block; color: $color-text-secondary; font-size: 13px; line-height: 20px; }
+.auth-button { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin: 0; padding: 0 12px; border-radius: $radius-control; border: 1px solid $color-primary; background: $color-primary; color: white; font-size: 16px; font-weight: 700; line-height: 24px; }
+.auth-button::after { border: 0; }
+.auth-button.secondary { background: white; color: $color-primary; font-size: 15px; font-weight: 500; }
+.auth-button[disabled] { background: #e0e5f0; border-color: #e0e5f0; color: #667387; }
+.auth-button:focus-visible { outline: 2px solid $color-primary; outline-offset: 3px; }
+.auth-error { display: block; color: #c72b33; font-size: 13px; line-height: 20px; }
+.mock-notice { display: block; margin-top: 30px; color: $color-text-secondary; font-size: 12px; text-align: center; line-height: 20px; }

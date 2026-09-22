@@ -1,2 +1,8 @@
-<script setup lang="ts">import PlaceholderPage from '@/components/PlaceholderPage.vue'</script>
-<template><PlaceholderPage title="内部调度" description="项目基础入口已就绪，业务能力将在后续阶段接入。" /></template>
+<script setup lang="ts">
+import { onShow } from '@dcloudio/uni-app'
+import { refreshAccess, landingUrl } from '@/features/workspace/navigation'
+onShow(async () => { if (await refreshAccess(true)) uni.reLaunch({ url: landingUrl() }) })
+</script>
+<template>
+  <view />
+</template>
