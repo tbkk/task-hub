@@ -1,0 +1,3 @@
+export interface TicketNote { id: string; authorName: string; text: string; createdAt: string }
+export interface Ticket { id: string; number: string; version: number; orderId: string; warehouseId: string; reporterId: string; description: string; state: 'OPEN' | 'PROCESSING' | 'CLOSED'; result: string | null; createdAt: string; updatedAt: string; notes?: TicketNote[]; events?: { id: string; action: string; actorName: string; occurredAt: string; summary?: string; reason?: string | null }[]; allowedActions?: string[] }
+export const ticketStateText = (state: string) => ({ OPEN: '待受理', PROCESSING: '处理中', CLOSED: '已关闭' } as Record<string, string>)[state] || state

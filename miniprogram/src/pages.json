@@ -29,6 +29,13 @@
       }
     },
     {
+      "path": "pages/messages/detail",
+      "style": {
+        "navigationBarTitleText": "消息详情",
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/profile/index",
       "style": {
         "navigationBarTitleText": "我的",
@@ -106,6 +113,22 @@
         {
           "path": "scan-pickup",
           "style": { "navigationBarTitleText": "扫码取货", "navigationStyle": "custom" }
+        },
+        {
+          "path": "pickup-confirm",
+          "style": { "navigationBarTitleText": "确认取货", "navigationStyle": "custom" }
+        },
+        {
+          "path": "tickets",
+          "style": { "navigationBarTitleText": "我的工单", "navigationStyle": "custom" }
+        },
+        {
+          "path": "ticket-create",
+          "style": { "navigationBarTitleText": "提交反馈", "navigationStyle": "custom" }
+        },
+        {
+          "path": "ticket-detail",
+          "style": { "navigationBarTitleText": "工单详情", "navigationStyle": "custom" }
         }
       ]
     },
@@ -139,6 +162,10 @@
             "navigationBarTitleText": "批次编辑",
             "navigationStyle": "custom"
           }
+        },
+        {
+          "path": "ticket-detail",
+          "style": { "navigationBarTitleText": "工单处理", "navigationStyle": "custom" }
         }
       ]
     },
@@ -151,6 +178,14 @@
             "navigationBarTitleText": "调度工作区",
             "navigationStyle": "custom"
           }
+        },
+        {
+          "path": "task-detail",
+          "style": { "navigationBarTitleText": "任务详情", "navigationStyle": "custom" }
+        },
+        {
+          "path": "vehicle",
+          "style": { "navigationBarTitleText": "车辆详情", "navigationStyle": "custom" }
         }
       ]
     },
