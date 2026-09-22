@@ -102,6 +102,10 @@
             "navigationBarTitleText": "取消申请",
             "navigationStyle": "custom"
           }
+        },
+        {
+          "path": "scan-pickup",
+          "style": { "navigationBarTitleText": "扫码取货", "navigationStyle": "custom" }
         }
       ]
     },

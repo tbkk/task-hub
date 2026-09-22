@@ -4,7 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SqlTicketBlocker {
+public class SqlTicketBlocker implements TicketBlocker {
   private final JdbcTemplate db;
 
   public SqlTicketBlocker(JdbcTemplate db) {

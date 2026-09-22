@@ -20,3 +20,5 @@
 - 外部微信/短信/实车资源阻塞，仅模拟交付。MySQL本机9.6，目标8.4未验。无Docker。
 - 2026-09-22 已核对 GeoBridge 九识 token/查询/MQTT 实现及九识 V2.9 文档；协议边界记录于 `docs/integration/jiushi-geobridge-adaptation.md`、`docs/integration/jiushi-geobridge-contract.md`、`docs/integration/provider-readiness.md`，S20 计划已补充。真实 Jiushi adapter/MQTT fixture 尚未实现，不能宣称真实接入完成。
 - 最新运行确认：PID32105 / 8080，demo已V11，ready READY；真实worker消息API16条，站内调度有效。尚不能标完整重启恢复通过。
+- 2026-09-22 后续计划执行开始：新增 V12 取货/控制请求表、扫码取货 API、指定格口开门、取货确认、go/cancel 控制策略与控制 API；`PickupIT`、`ControlPolicyTest`、`MigrationIT` 及编译通过。仍需补充完整取货/控制集成场景、独立 review、前端页面和全链路回归，当前改动尚未提交。
+- 2026-09-22 继续推进：根据 Task 1 独立 review 修复扫码阻断、服务端请求 ID 隔离、历史请求授权重放和同车活动控制数据库唯一约束，新增 V14；复验 `PickupIT`、`MigrationIT`、`ControlPolicyTest` 通过。小程序新增取货/控制 API、扫码取货页和消息列表页，`npm test` 35 项、`npm run typecheck` 通过。Task 1 复核报告仍需再次确认，Task 2 尚未完成事务外网关调用和完整 `ControlIT`，Task 3 仍需调度、工单和取货确认页面。
