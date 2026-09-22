@@ -130,9 +130,16 @@ public class VehicleControlService {
     } catch (DuplicateKeyException e) {
       var duplicate = db.queryForList("SELECT * FROM control_request WHERE actor_id=? AND request_key=? FOR UPDATE",
           actor.employeeId(), key);
-      if (!duplicate.isEmpty()) return new Prepared(String.valueOf(duplicate.get(0).get("id")), type, vehicleId,
-          String.valueOf(task.get("dispatch_id")), false, duplicate.get(0));
-      throw e;
+      if (!duplicate.isEmpty()) {
+        Map<String, Object> row = duplicate.get(0);
+        if (!type.equals(row.get("type")) || !taskId.equals(row.get("task_id"))
+            || (row.get("request_hash") != null && !hash.equals(row.get("request_hash"))))
+          throw new ApiException(409, 40901, "同一请求标识的内容不一致");
+        return new Prepared(String.valueOf(row.get("id")), type, vehicleId,
+            String.valueOf(task.get("dispatch_id")), false, row);
+      }
+      // The remaining duplicate can only be the active (vehicle,type) key from another request.
+      throw new ApiException(409, 40903, "车辆已有待核对控制请求，请稍后核对");
     }
     String dispatchId = task.get("dispatch_id") == null ? String.valueOf(task.get("request_dispatch_id")) : String.valueOf(task.get("dispatch_id"));
     return new Prepared(id, type, vehicleId, dispatchId, true, null);
