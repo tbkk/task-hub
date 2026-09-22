@@ -2,6 +2,8 @@
 
 项目文档以 Markdown 为主，已有 Word 原始资料保留在 `design/` 中。
 
+- [用户操作手册](用户操作手册.md)：面向管理员、工人和仓库人员的本地演示操作步骤、常见问题及当前功能边界。
+
 - `../AGENTS.md`：项目开发规则，参考 Puck 的需求、分支、验证和 review 规范。
 - `development/workflow.md`：新功能、Bug 修复、数据库变更、验证与提交交付流程。
 - `development/acceptance-matrix.md`：A01–A15 验收范围、已有验证记录、剩余实现与真实资源依赖；2026-09-22 已按代码核对状态。
