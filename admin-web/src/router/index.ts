@@ -34,7 +34,13 @@ const moduleRoutes: RouteRecordRaw[] = [
           ? () => import("@/features/masterdata/MasterdataPage.vue")
           : entry.path === "/master-data/compartments"
             ? () => import("@/features/masterdata/CompartmentPage.vue")
-            : entry.path === "/rules"
+              : entry.path === "/integrations"
+                ? () => import("@/features/integration/IntegrationPage.vue")
+                : entry.path === "/reports"
+                  ? () => import("@/features/reports/ReportsPage.vue")
+                  : entry.path === "/audit"
+                    ? () => import("@/features/audit/AuditPage.vue")
+              : entry.path === "/rules"
               ? () => import("@/features/masterdata/RulesPage.vue")
               : () => import("@/views/ModulePlaceholder.vue"),
     meta: {
