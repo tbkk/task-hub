@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onLaunch } from '@dcloudio/uni-app'
-onLaunch(() => undefined)
+import { restoreSession } from '@/features/auth/session'
+onLaunch(() => { restoreSession() })
 </script>
 
 <style lang="scss">

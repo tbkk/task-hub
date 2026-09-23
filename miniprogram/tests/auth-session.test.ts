@@ -12,11 +12,55 @@ const identity: Identity = {
   mustChangePassword: false,
 }
 const session: Session = { token: 'opaque-token', expiresAt: '2026-09-20T18:00:00+08:00', user: identity }
+let storage: Record<string, unknown>
 
 beforeEach(() => {
+  storage = {}
   ;(globalThis as typeof globalThis & { uni: unknown }).uni = {
-    getStorageSync: () => '', setStorageSync: () => undefined, reLaunch: () => undefined,
+    getStorageSync: (key: string) => storage[key] ?? '',
+    setStorageSync: (key: string, value: unknown) => { storage[key] = value },
+    removeStorageSync: (key: string) => { delete storage[key] },
+    reLaunch: () => undefined,
   }
+})
+
+test('有效本地会话可在启动时恢复身份和 token', async () => {
+  const { acceptSession, restoreSession, clearLocalSession, currentUser, AUTH_SESSION_STORAGE_KEY } = await import('../src/features/auth/session')
+  const { sessionToken, SESSION_TOKEN_STORAGE_KEY } = await import('../src/services/session')
+  const restored: Session = {
+    ...session,
+    token: 'restored-token',
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    user: { ...identity, id: 'restored-user' },
+  }
+  acceptSession(session)
+  storage[AUTH_SESSION_STORAGE_KEY] = JSON.stringify(restored)
+  storage[SESSION_TOKEN_STORAGE_KEY] = JSON.stringify({ token: restored.token, expiresAt: restored.expiresAt })
+
+  assert.equal(restoreSession(), true)
+  assert.equal(sessionToken.get(), restored.token)
+  assert.equal(currentUser.value?.id, restored.user.id)
+  clearLocalSession()
+})
+
+test('过期或不完整的本地会话启动时被清除', async () => {
+  const { restoreSession, currentUser, AUTH_SESSION_STORAGE_KEY } = await import('../src/features/auth/session')
+  const { sessionToken, SESSION_TOKEN_STORAGE_KEY } = await import('../src/services/session')
+  const expired = { ...session, expiresAt: new Date(Date.now() - 1).toISOString() }
+  storage[AUTH_SESSION_STORAGE_KEY] = JSON.stringify(expired)
+  storage[SESSION_TOKEN_STORAGE_KEY] = JSON.stringify({ token: expired.token, expiresAt: expired.expiresAt })
+
+  assert.equal(restoreSession(), false)
+  assert.equal(sessionToken.get(), null)
+  assert.equal(currentUser.value, null)
+  assert.equal(storage[AUTH_SESSION_STORAGE_KEY], undefined)
+  assert.equal(storage[SESSION_TOKEN_STORAGE_KEY], undefined)
+
+  const malformed = { ...session, expiresAt: 'not-a-date' }
+  storage[AUTH_SESSION_STORAGE_KEY] = JSON.stringify(malformed)
+  storage[SESSION_TOKEN_STORAGE_KEY] = JSON.stringify({ token: malformed.token, expiresAt: malformed.expiresAt })
+  assert.equal(restoreSession(), false)
+  assert.equal(sessionToken.get(), null)
 })
 
 test('取消登录后服务端即使返回也不恢复 session', async () => {
