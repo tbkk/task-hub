@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { details, exportReport, summary, type ReportRow, type Summary } from './api'
+const today=new Date().toISOString().slice(0,10), from=ref(today), to=ref(today), busy=ref(false), error=ref(''), data=ref<Summary>({orders:0,batches:0,tasks:0}), rows=ref<ReportRow[]>([])
+async function load(){busy.value=true;error.value='';try{data.value=await summary(from.value,to.value);rows.value=(await details(from.value,to.value)).items}catch(e){error.value=e instanceof Error?e.message:'报表读取失败'}finally{busy.value=false}}
+async function exportData(){try{const result=await exportReport(from.value,to.value);const url=URL.createObjectURL(result.blob);const a=document.createElement('a');a.href=url;a.download=result.filename;a.click();URL.revokeObjectURL(url)}catch(e){ElMessage.error(e instanceof Error?e.message:'导出失败')}}
+onMounted(load)
+</script>
+<template><section class="module-page"><header class="page-heading"><p class="page-kicker">REPORTS / 基础统计</p><h1>业务报表</h1><p>订单、批次和任务按业务日期统计，数据范围遵循当前授权。</p></header><div class="content"><div class="toolbar"><el-date-picker v-model="from" type="date" value-format="YYYY-MM-DD" aria-label="开始日期"/><el-date-picker v-model="to" type="date" value-format="YYYY-MM-DD" aria-label="结束日期"/><el-button :loading="busy" @click="load">查询</el-button><el-button :disabled="busy" @click="exportData">导出 Excel</el-button></div><el-alert v-if="error" :title="error" type="error" :closable="false"/><div class="summary-grid"><el-statistic title="订单" :value="data.orders"/><el-statistic title="批次" :value="data.batches"/><el-statistic title="任务" :value="data.tasks"/></div><el-table :data="rows" v-loading="busy" stripe><el-table-column prop="number" label="订单号"/><el-table-column prop="warehouseId" label="仓库"/><el-table-column prop="status" label="状态"/><el-table-column prop="createdAt" label="创建时间"/></el-table></div></section></template>
+<style scoped>.content{padding:24px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.summary-grid{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:12px;margin:14px 0 22px}.summary-grid>*{border:1px solid var(--line);padding:16px;background:#fbfcfc}@media(max-width:600px){.summary-grid{grid-template-columns:1fr}}</style>

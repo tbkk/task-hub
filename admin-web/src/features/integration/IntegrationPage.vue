@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { onMounted, reactive, ref } from 'vue'; import { ElMessage } from 'element-plus'; import { getSettings, saveSettings } from './api'
+const busy=ref(false), error=ref(''), secret=ref(''), token=ref(''), form=reactive({provider:'',baseUrl:'',orgId:'',appId:'',enabled:false,version:0})
+async function load(){busy.value=true;try{Object.assign(form,await getSettings())}catch(e){error.value=e instanceof Error?e.message:'接入配置读取失败'}finally{busy.value=false}}
+async function save(){busy.value=true;try{Object.assign(form,await saveSettings({...form,expectedVersion:form.version,clientSecret:secret.value||undefined,accessToken:token.value||undefined}));secret.value='';token.value='';ElMessage.success('接入设置已保存')}catch(e){ElMessage.error(e instanceof Error?e.message:'保存失败')}finally{busy.value=false}}
+onMounted(load)
+</script>
+<template><section class="module-page"><header class="page-heading"><p class="page-kicker">INTEGRATION / 接入设置</p><h1>既有服务接入</h1><p>凭证只写入服务端，读取和日志均不返回明文。</p></header><div class="content"><el-alert v-if="error" :title="error" type="error" :closable="false"/><el-form label-width="120px"><el-form-item label="提供者"><el-input v-model="form.provider"/></el-form-item><el-form-item label="基础地址"><el-input v-model="form.baseUrl"/></el-form-item><el-form-item label="组织 ID"><el-input v-model="form.orgId"/></el-form-item><el-form-item label="应用 ID"><el-input v-model="form.appId"/></el-form-item><el-form-item label="客户端凭证"><el-input v-model="secret" type="password" placeholder="留空表示不修改" show-password/></el-form-item><el-form-item label="访问令牌"><el-input v-model="token" type="password" placeholder="留空表示不修改" show-password/></el-form-item><el-form-item label="启用"><el-switch v-model="form.enabled"/></el-form-item><el-button type="primary" :loading="busy" @click="save">保存设置</el-button></el-form></div></section></template>
+<style scoped>.content{padding:24px;max-width:760px}</style>

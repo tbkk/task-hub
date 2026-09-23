@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'; import { history, type AuditRow } from './api'
+const today=new Date().toISOString().slice(0,10), from=ref(today), to=ref(today), busy=ref(false), error=ref(''), rows=ref<AuditRow[]>([])
+async function load(){busy.value=true;error.value='';try{rows.value=(await history(from.value,to.value)).items}catch(e){error.value=e instanceof Error?e.message:'审计读取失败'}finally{busy.value=false}} onMounted(load)
+</script>
+<template><section class="module-page"><header class="page-heading"><p class="page-kicker">AUDIT / 操作履历</p><h1>审计日志</h1><p>记录操作者、对象和状态变化；敏感凭证已脱敏。</p></header><div class="content"><div class="toolbar"><el-date-picker v-model="from" type="date" value-format="YYYY-MM-DD"/><el-date-picker v-model="to" type="date" value-format="YYYY-MM-DD"/><el-button :loading="busy" @click="load">查询</el-button></div><el-alert v-if="error" :title="error" type="error" :closable="false"/><el-table :data="rows" v-loading="busy" stripe><el-table-column prop="occurredAt" label="时间"/><el-table-column prop="actorName" label="操作者"/><el-table-column prop="objectType" label="对象"/><el-table-column prop="objectId" label="对象 ID"/><el-table-column prop="action" label="动作"/><el-table-column prop="reason" label="原因"/></el-table></div></section></template>
+<style scoped>.content{padding:24px}.toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}</style>

@@ -41,17 +41,17 @@ class ApiContractTest {
     }
 
     @Test
-    void arbitraryGetAndPostAreDeniedWithStandardEnvelope() throws Exception {
+    void arbitraryGetAndPostRequireAuthenticationWithStandardEnvelope() throws Exception {
         mockMvc.perform(get("/api/orders"))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value(403))
-            .andExpect(jsonPath("$.message").value("forbidden"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value(40101))
+            .andExpect(jsonPath("$.message").value("会话已失效，请重新登录"))
             .andExpect(jsonPath("$.data").value(nullValue()));
 
         mockMvc.perform(post("/api/orders"))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("$.code").value(403))
-            .andExpect(jsonPath("$.message").value("forbidden"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value(40101))
+            .andExpect(jsonPath("$.message").value("会话已失效，请重新登录"))
             .andExpect(jsonPath("$.data").value(nullValue()));
     }
 }

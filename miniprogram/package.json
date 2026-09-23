@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test": "node --import tsx --test tests/*.test.ts",
     "dev:h5": "uni -p h5",
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:h5": "uni build -p h5",
@@ -22,6 +23,7 @@
     "@types/node": "22.18.6",
     "@vue/tsconfig": "0.5.1",
     "sass": "1.77.8",
+    "tsx": "4.20.6",
     "typescript": "5.4.5",
     "vite": "5.2.8",
     "vue-tsc": "2.0.29"
