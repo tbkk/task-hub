@@ -166,6 +166,10 @@
         {
           "path": "ticket-detail",
           "style": { "navigationBarTitleText": "工单处理", "navigationStyle": "custom" }
+        },
+        {
+          "path": "tickets",
+          "style": { "navigationBarTitleText": "工单处理列表", "navigationStyle": "custom" }
         }
       ]
     },
