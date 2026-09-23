@@ -30,6 +30,7 @@ public class ReportController {
   @GetMapping("/export")
   public ResponseEntity<byte[]> export(@AuthenticationPrincipal Actor actor, @RequestParam LocalDate from,
       @RequestParam LocalDate to, @RequestParam(required=false) String warehouseId, @RequestParam(required=false) String status) {
+    reports.requireExport(actor);
     var result = reports.export(actor, new ReportModels.ReportFilter(from,to,warehouseId,status,null,1,100));
     return ResponseEntity.ok().contentType(MediaType.parseMediaType(result.contentType()))
         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" +

@@ -25,6 +25,7 @@ public class ReportService {
     return new ReportModels.Summary(count("delivery_order", "created_at", scope), count("batch", "created_at", scope),
         count("vehicle_task", "created_at", scope));
   }
+  public void requireExport(Actor actor) { authorization.requirePlatform(actor, "REPORT_EXPORT", null); }
 
   public PageResponse<Map<String,Object>> details(Actor actor, ReportModels.ReportFilter filter) {
     var scope = ReportScope.from(actor, filter, authorization);
@@ -69,7 +70,8 @@ public class ReportService {
   }
 
   private String scopeWhere(String alias, ReportModels.ScopedFilter scope, List<Object> args, String timeColumn) {
-    args.add(scope.from()); args.add(scope.to());
+    args.add(Timestamp.from(scope.from().atZone(BUSINESS_ZONE).toInstant()));
+    args.add(Timestamp.from(scope.to().atZone(BUSINESS_ZONE).toInstant()));
     StringBuilder where = new StringBuilder(timeColumn + " >= ? AND " + timeColumn + " < ?");
     if (scope.warehouseId() != null) { where.append(" AND ").append(alias).append(".warehouse_id=?"); args.add(scope.warehouseId()); }
     else if (!scope.warehouseIds().isEmpty()) { where.append(" AND ").append(alias).append(".warehouse_id IN (").append("?,".repeat(scope.warehouseIds().size()).replaceAll(",$", "")).append(")"); args.addAll(scope.warehouseIds()); }

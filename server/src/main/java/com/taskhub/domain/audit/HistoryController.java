@@ -24,14 +24,15 @@ public class HistoryController {
     if (to.isBefore(from) || to.isAfter(from.plusYears(1))) throw new ApiException(400,40001,"日期范围无效");
     var id = identity.platformGrants().stream().filter(g -> "AUDIT_VIEW".equals(g.capability())).findFirst().orElseThrow(AuthorizationService::denied);
     var args = new ArrayList<Object>(); StringBuilder where = new StringBuilder("a.occurred_at >= ? AND a.occurred_at < ?");
-    args.add(from.atStartOfDay()); args.add(to.plusDays(1).atStartOfDay());
+    args.add(java.sql.Timestamp.from(from.atStartOfDay(ZoneId.of("Asia/Shanghai")).toInstant()));
+    args.add(java.sql.Timestamp.from(to.plusDays(1).atStartOfDay(ZoneId.of("Asia/Shanghai")).toInstant()));
     if (objectType != null && !objectType.isBlank()) { where.append(" AND a.object_type=?"); args.add(objectType); }
     if (action != null && !action.isBlank()) { where.append(" AND a.action=?"); args.add(action); }
     if (!"ALL".equals(id.scope())) {
       if (id.warehouseIds().isEmpty()) return ApiResponse.success(new PageResponse<>(List.of(),0,page,pageSize));
       String marks = "?,".repeat(id.warehouseIds().size()).replaceAll(",$", ""); args.addAll(id.warehouseIds());
       where.append(" AND ((a.object_type='WAREHOUSE' AND a.object_id IN (").append(marks).append(")) OR EXISTS (SELECT 1 FROM delivery_order x WHERE a.object_type='ORDER' AND x.id=a.object_id AND x.warehouse_id IN (").append(marks).append(")) OR EXISTS (SELECT 1 FROM batch x WHERE a.object_type='BATCH' AND x.id=a.object_id AND x.warehouse_id IN (").append(marks).append(")) OR EXISTS (SELECT 1 FROM ticket x WHERE a.object_type='TICKET' AND x.id=a.object_id AND x.warehouse_id IN (").append(marks).append(")))");
-      args.addAll(id.warehouseIds()); args.addAll(id.warehouseIds());
+      args.addAll(id.warehouseIds()); args.addAll(id.warehouseIds()); args.addAll(id.warehouseIds());
     }
     int safeSize=Math.min(Math.max(pageSize,1),100); int total=db.queryForObject("SELECT COUNT(*) FROM audit_event a WHERE "+where,Integer.class,args.toArray());
     var rowArgs=new ArrayList<>(args); rowArgs.add((page-1)*safeSize); rowArgs.add(safeSize);

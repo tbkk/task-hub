@@ -59,7 +59,8 @@ public class AuditService {
                     || key.contains("secret")
                     || key.contains("credential")
                     || key.equals("code")
-                    || key.equals("openid")) result.put(entry.getKey(), "[已隐藏]");
+                    || key.equals("openid")
+                    || key.contains("phone")) result.put(entry.getKey(), "[已隐藏]");
                 else result.set(entry.getKey(), redact(entry.getValue()));
               });
       return result;

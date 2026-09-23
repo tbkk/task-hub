@@ -44,7 +44,7 @@ public class PickupService {
     var task = db.queryForList("SELECT t.*,b.stop_id FROM vehicle_task t JOIN batch b ON b.id=t.batch_id JOIN active_vehicle_task a ON a.task_id=t.id AND a.vehicle_id=t.vehicle_id WHERE t.vehicle_id=?", vehicle);
     if (task.isEmpty()) throw bad("车辆没有活动任务");
     var t = task.get(0);
-    var orders = db.queryForList("SELECT o.id,o.number,o.receiver_name,o.status,o.version,ba.compartment_id FROM delivery_order o JOIN active_order_batch ab ON ab.order_id=o.id JOIN batch_assignment ba ON ba.order_id=o.id AND ba.batch_id=ab.batch_id WHERE ab.batch_id=? AND COALESCE(o.receiver_id,(SELECT p.employee_id FROM verified_phone p WHERE p.phone=o.receiver_phone))=? AND o.status='AWAITING_PICKUP'", t.get("batch_id"), actor.employeeId());
+    var orders = db.queryForList("SELECT o.id,o.number,o.receiver_name AS receiverName,o.status,o.version,ba.compartment_id AS compartmentId FROM delivery_order o JOIN active_order_batch ab ON ab.order_id=o.id JOIN batch_assignment ba ON ba.order_id=o.id AND ba.batch_id=ab.batch_id WHERE ab.batch_id=? AND COALESCE(o.receiver_id,(SELECT p.employee_id FROM verified_phone p WHERE p.phone=o.receiver_phone))=? AND o.status='AWAITING_PICKUP'", t.get("batch_id"), actor.employeeId());
     Map<String,Object> out = new LinkedHashMap<>();
     Map<String,Object> vehicleView = new LinkedHashMap<>(vehicles.snapshot(vehicle));
     var blockers = new ArrayList<Map<String,String>>();

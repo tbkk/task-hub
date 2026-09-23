@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ExcelExportService {
-  public static final String MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  public static final String MIME = "text/csv; charset=UTF-8";
   private static final Pattern FORMULA = Pattern.compile("^[=+\\-@]");
 
   public byte[] csv(List<String> headers, List<List<?>> rows) {
@@ -34,6 +34,6 @@ public class ExcelExportService {
 
   public String safeFilename(String prefix, LocalDate from, LocalDate to) {
     String p = prefix == null ? "报表" : prefix.replaceAll("[^\\p{L}\\p{N}_-]", "_");
-    return p + "_" + from + "_" + to + ".xlsx";
+    return p + "_" + from + "_" + to + ".csv";
   }
 }
