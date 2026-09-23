@@ -16,6 +16,50 @@ const pendingChallenge = shallowRef<{ id: string; phone: string; purpose: SmsPur
 let refreshPromise: Promise<Identity> | null = null
 let invalidationRedirected = false
 
+export const AUTH_SESSION_STORAGE_KEY = 'task-hub:session'
+type StorageRuntime = {
+  getStorageSync?: (key: string) => unknown
+  setStorageSync?: (key: string, value: unknown) => void
+  removeStorageSync?: (key: string) => void
+}
+
+function storageRuntime() {
+  return (globalThis as typeof globalThis & { uni?: StorageRuntime }).uni
+}
+
+function clearStoredSession() {
+  const runtime = storageRuntime()
+  try {
+    if (runtime?.removeStorageSync) runtime.removeStorageSync(AUTH_SESSION_STORAGE_KEY)
+    else runtime?.setStorageSync?.(AUTH_SESSION_STORAGE_KEY, '')
+  } catch { /* 本地存储不可用时仍清除内存会话。 */ }
+}
+
+function persistStoredSession(session: Session) {
+  try { storageRuntime()?.setStorageSync?.(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session)) }
+  catch { /* 本地存储不可用时仍保持当前会话可用。 */ }
+}
+
+function isIdentity(value: unknown): value is Identity {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<Identity>
+  return typeof candidate.id === 'string' && typeof candidate.name === 'string' &&
+    (candidate.verifiedPhone === null || typeof candidate.verifiedPhone === 'string') &&
+    Array.isArray(candidate.grants) && Array.isArray(candidate.platformGrants) &&
+    typeof candidate.admin === 'boolean' && typeof candidate.mustChangePassword === 'boolean'
+}
+
+function readStoredSession(): Session | null {
+  try {
+    const raw = storageRuntime()?.getStorageSync?.(AUTH_SESSION_STORAGE_KEY)
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+    if (!parsed || typeof parsed !== 'object') return null
+    const candidate = parsed as Partial<Session>
+    if (typeof candidate.token !== 'string' || !candidate.token || typeof candidate.expiresAt !== 'string' || !isIdentity(candidate.user)) return null
+    return { token: candidate.token, expiresAt: candidate.expiresAt, user: candidate.user }
+  } catch { return null }
+}
+
 function preferredWorkspace(userId: string) { return uni.getStorageSync(`workspace:${userId}`) as string | undefined }
 
 export function applyIdentity(user: Identity) {
@@ -26,7 +70,8 @@ export function applyIdentity(user: Identity) {
 
 export function acceptSession(session: Session, isActive: () => boolean = () => true) {
   if (!isActive()) return false
-  sessionToken.set(session.token)
+  sessionToken.set(session.token, session.expiresAt)
+  persistStoredSession(session)
   applyIdentity(session.user)
   pendingBinding.value = null
   pendingChallenge.value = null
@@ -36,11 +81,28 @@ export function acceptSession(session: Session, isActive: () => boolean = () => 
 
 export function clearLocalSession() {
   sessionToken.clear()
+  clearStoredSession()
   currentUser.value = null
   pendingBinding.value = null
   pendingChallenge.value = null
   refreshPromise = null
   workspace.reset()
+}
+
+export function restoreSession(now = Date.now()) {
+  const stored = readStoredSession()
+  const restoredToken = sessionToken.restore(now)
+  if (!stored || !restoredToken || stored.token !== restoredToken.token || stored.expiresAt !== restoredToken.expiresAt || Date.parse(stored.expiresAt) <= now) {
+    clearLocalSession()
+    return false
+  }
+  sessionToken.set(stored.token, stored.expiresAt)
+  applyIdentity(stored.user)
+  pendingBinding.value = null
+  pendingChallenge.value = null
+  refreshPromise = null
+  invalidationRedirected = false
+  return true
 }
 
 function invalidateSession() {
