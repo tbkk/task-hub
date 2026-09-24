@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.taskhub.domain.identity.SessionService;
 import java.util.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ class IdentityIT {
   @Autowired MockMvc mvc;
   @Autowired JdbcTemplate jdbc;
   @Autowired ObjectMapper json;
+  @Autowired SessionService sessions;
   String id, username;
   final String ip =
       "2001:db8:"
@@ -178,6 +180,35 @@ class IdentityIT {
     postJson("/api/admin/auth/login", null, Map.of("username", username, "password", next))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.user.mustChangePassword").value(false));
+  }
+
+  @Test
+  void administratorCredentialResetRevokesMiniAndAdminSessions() throws Exception {
+    String adminToken = login();
+    String miniToken = sessions.issue(id, "MINI").token();
+    String temporary = "Temporary-reset-" + UUID.randomUUID();
+
+    postJson(
+            "/api/admin/employees/" + id + "/credentials",
+            adminToken,
+            Map.of("username", username, "temporaryPassword", temporary))
+        .andExpect(status().isOk());
+
+    mvc.perform(get("/api/identity/me").header("Authorization", "Bearer " + adminToken))
+        .andExpect(status().isUnauthorized());
+    mvc.perform(get("/api/identity/me").header("Authorization", "Bearer " + miniToken))
+        .andExpect(status().isUnauthorized());
+    assertEquals(
+        0,
+        jdbc.queryForObject(
+            "select count(*) from auth_session where employee_id=?", Integer.class, id));
+
+    postJson(
+            "/api/admin/auth/login",
+            null,
+            Map.of("username", username, "password", temporary))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.user.mustChangePassword").value(true));
   }
 
   @Test
