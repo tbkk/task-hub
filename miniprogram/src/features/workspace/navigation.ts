@@ -13,6 +13,7 @@ export async function refreshAccess(allowSelection = false, expectedRole?: Role)
   }
   const refreshed = currentUser.value
   if (!refreshed) return false
+  if (refreshed.mustChangePassword) { uni.reLaunch({ url: '/pages/password/index' }); return false }
   workspace.refresh(refreshed.id, refreshed.grants, uni.getStorageSync(`workspace:${refreshed.id}`))
   if (!allowSelection && !workspace.activeRole) {
     uni.reLaunch({ url: '/pages/workspace/index' }); return false

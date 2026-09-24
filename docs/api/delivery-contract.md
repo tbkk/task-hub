@@ -31,11 +31,12 @@ type WechatExchange = {status:'AUTHENTICATED';session:Session}|{status:'PHONE_RE
 | GET `/identity/me` | 无 | `Identity`；每次验证停用、过期及实时授权 |
 | POST `/identity/logout` | 无 | `null`；撤销当前会话，重复退出安全 |
 | POST `/identity/password` | `{currentPassword,newPassword}` | `null`；修改后撤销全部会话，重新登录 |
+| POST `/admin/employees/{id}/credentials` | `{username,temporaryPassword}` | `null`；管理员重置后设置 `mustChangePassword=true`，撤销该员工全部会话，不回显密码 |
 | POST `/mini/auth/wechat` | `{code}` | `WechatExchange`；模拟 code 仅 local/test 提供者接受 |
 | POST `/mini/auth/sms` | `{phone,purpose:'LOGIN'|'BIND',bindingToken?:string}` | `{challengeId,retryAfterSeconds,expiresAt}`；不返回验证码 |
 | POST `/mini/auth/verify` | `{challengeId,phone,code,bindingToken?:string}` | `Session`；验证码单次消费，BIND 必须验证绑定 token |
 
-短信登录不要求已有微信会话；绑定微信则必须具有服务端生成的短期绑定 token。手机号由管理员录入不代表验证；只有验证码成功后才建立本人验证关系；冲突拒绝自动合并。模拟验证码从本地环境配置加载，不写到版本库或普通日志。
+密码登录是小程序默认入口，不依赖短信。短信登录接口保留兼容旧客户端和绑定流程；绑定微信必须具有服务端生成的短期绑定 token。模拟验证码从本地环境配置加载，不写到版本库或普通日志。临时密码会话只允许身份查询、改密和退出。
 
 员工 `homeWarehouseId` 为管理员配置的所属仓库，迁移期可空；工人申请只允许该启用仓库，未配置返回空目录并提示联系管理员。`worker` 的 SELF 与空 `warehouseIds` 表示本人订单范围，不承担仓库归属。
 

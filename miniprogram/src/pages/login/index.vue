@@ -1,66 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import BaseButton from '@/components/BaseButton.vue'
-import { onShow, onUnload } from '@dcloudio/uni-app'
-import { currentUser, mockCode, mockEnabled, pendingBinding, startWechatLogin, failNextMockRequest } from '@/features/auth/session'
-
-const busy = ref(false)
-const error = ref('')
-const showDemo = ref(false)
-let active = true
-onUnload(() => { active = false })
-function simulate(failure: 'network' | 'cancel') { failNextMockRequest(failure); void wechatLogin() }
-onShow(() => {
-  if (currentUser.value) uni.reLaunch({ url: '/pages/index/index' })
-})
-async function wechatLogin() {
-  if (busy.value) return
-  busy.value = true
-  error.value = ''
-  try {
-    const status = await startWechatLogin(() => active)
-    if (status === 'AUTHENTICATED') await uni.reLaunch({ url: '/pages/index/index' })
-    else await uni.navigateTo({ url: '/pages/phone/index?mode=bind' })
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : '登录失败，请重试'
-  } finally { busy.value = false }
-}
-function phoneLogin() {
-  pendingBinding.value = null
-  uni.navigateTo({ url: '/pages/phone/index' })
-}
+import { signInWithPassword, startWechatLogin } from '@/features/auth/session'
+const username=ref(''), password=ref(''), busy=ref(false), error=ref('')
+async function login(){if(busy.value)return;if(!username.value.trim()||!password.value){error.value='请输入账号和密码';return}busy.value=true;error.value='';try{const session=await signInWithPassword(username.value,password.value);uni.reLaunch({url:session.user.mustChangePassword?'/pages/password/index':'/pages/index/index'})}catch(e){error.value=e instanceof Error?e.message:'登录失败，请重试'}finally{busy.value=false}}
+async function wechat(){if(busy.value)return;busy.value=true;error.value='';try{const status=await startWechatLogin();uni.navigateTo({url:status==='AUTHENTICATED'?'/pages/index/index':'/pages/phone/index?mode=bind'})}catch(e){error.value=e instanceof Error?e.message:'微信登录失败，请重试'}finally{busy.value=false}}
 </script>
-
-<template>
-  <view class="auth-page login-page">
-    <view class="intro">
-      <text class="auth-title">中集内部调度系统</text>
-      <text class="auth-subtitle">工厂内部物料配送</text>
-    </view>
-    <view class="admission-card">
-      <text class="admission-title">仅限已开通权限的内部员工使用</text>
-      <text class="admission-description">使用内部账号登录后，可提交申请并查看本人订单。</text>
-    </view>
-    <view class="actions">
-      <BaseButton :loading="busy" @click="wechatLogin">{{ busy ? '登录中…' : '微信登录' }}</BaseButton>
-      <BaseButton variant="secondary" :disabled="busy" @click="phoneLogin">手机号验证码登录</BaseButton>
-      <text v-if="error" class="auth-error" role="alert">{{ error }}</text>
-    </view>
-    <text class="contact">未开通权限？请联系管理员</text>
-    <text v-if="mockEnabled" class="mock-notice">演示模式 · 微信与短信均为模拟</text>
-    <view v-if="mockEnabled" class="demo"><button :disabled="busy" @click="showDemo = !showDemo">{{ showDemo ? '收起演示场景' : '演示账号与失败场景' }}</button><view v-if="showDemo"><text>工人：13800000000；多角色：13800000003</text><text>仓库：13800000004；调度：13800000005</text><text>概览：13800000006；验证码：{{ mockCode }}</text><button :disabled="busy" @click="simulate('cancel')">模拟取消微信授权</button><button :disabled="busy" @click="simulate('network')">模拟微信网络失败</button></view></view>
-  </view>
-</template>
-
-<style lang="scss" scoped>
-@use '@/styles/auth.scss';
-.login-page { padding-top: max(116px, calc(env(safe-area-inset-top) + 72px)); }
-.intro { margin: 0 24px; }
-.intro .auth-subtitle { margin-top: 4px; font-size: 14px; }
-.admission-card { margin: 42px 24px 0; min-height: 118px; padding: 18px 16px; border-radius: 12px; background: white; }
-.admission-title { display: block; font-size: 15px; font-weight: 500; line-height: 22px; }
-.admission-description { display: block; margin-top: 12px; font-size: 13px; line-height: 22px; color: #667387; }
-.actions { margin: 36px 16px 0; display: flex; flex-direction: column; gap: 12px; }
-.contact { display: block; margin-top: 28px; text-align: center; color: #667387; font-size: 13px; line-height: 20px; }
-.demo { margin: 10px 16px; text-align: center; color: #667387; font-size: 12px; line-height: 22px; }.demo text { display: block; }.demo button { margin: 0; background: transparent; color: #667387; font-size: 12px; }.demo button::after { border: 0; }
-</style>
+<template><view class="auth-page login-page"><view class="intro"><text class="auth-title">中集内部调度系统</text><text class="auth-subtitle">工厂内部物料配送</text></view><view class="admission-card"><text class="admission-title">仅限已开通权限的内部员工使用</text><text class="admission-description">使用管理员开通的内部账号登录。首次登录需要修改临时密码。</text></view><view class="actions"><input v-model="username" placeholder="内部账号" autocomplete="username" :disabled="busy"/><input v-model="password" type="password" password placeholder="密码" autocomplete="current-password" :disabled="busy" @confirm="login"/><BaseButton :loading="busy" @click="login">登录</BaseButton><BaseButton variant="secondary" :disabled="busy" @click="wechat">微信绑定登录</BaseButton><text v-if="error" class="auth-error">{{error}}</text></view><text class="contact">忘记密码请联系管理员重置</text></view></template>
+<style lang="scss" scoped>@use '@/styles/auth.scss';.login-page{padding-top:max(116px,calc(env(safe-area-inset-top) + 72px))}.intro{margin:0 24px}.intro .auth-subtitle{margin-top:4px;font-size:14px}.admission-card{margin:42px 24px 0;min-height:118px;padding:18px 16px;border-radius:12px;background:#fff}.admission-title{display:block;font-size:15px;font-weight:500;line-height:22px}.admission-description{display:block;margin-top:12px;font-size:13px;line-height:22px;color:#667387}.actions{margin:36px 16px 0;display:flex;flex-direction:column;gap:12px}.actions input{height:44px;padding:0 14px;background:#fff;border-radius:8px;font-size:14px}.contact{display:block;margin-top:28px;text-align:center;color:#667387;font-size:13px;line-height:20px}</style>
