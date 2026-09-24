@@ -3,7 +3,4 @@ export type PlatformCapability = 'EMPLOYEE_MANAGE' | 'MASTERDATA_MANAGE' | 'RULE
 export interface PlatformGrant { capability: PlatformCapability; scope: 'WAREHOUSES' | 'ALL'; warehouseIds: string[] }
 export interface Identity { id: string; name: string; verifiedPhone: string | null; grants: Grant[]; platformGrants: PlatformGrant[]; admin: boolean; mustChangePassword: boolean }
 export interface Session { token: string; expiresAt: string; user: Identity }
-export type WechatExchange = { status: 'AUTHENTICATED'; session: Session } | { status: 'PHONE_REQUIRED'; bindingToken: string; expiresAt: string }
-export type SmsPurpose = 'LOGIN' | 'BIND'
-export interface SmsChallenge { challengeId: string; retryAfterSeconds: number; expiresAt: string }
-export interface VerifySmsInput { challengeId: string; phone: string; code: string; bindingToken?: string }
+export type WechatExchange = { status: 'AUTHENTICATED'; session: Session } | { status: 'CREDENTIALS_REQUIRED'; bindingToken: string; expiresAt: string }

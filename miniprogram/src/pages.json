@@ -16,9 +16,9 @@
       }
     },
     {
-      "path": "pages/phone/index",
+      "path": "pages/wechat-bind/index",
       "style": {
-        "navigationBarTitleText": "手机号验证",
+        "navigationBarTitleText": "绑定微信",
         "navigationStyle": "custom"
       }
     },

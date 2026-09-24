@@ -26,30 +26,11 @@ public interface MiniAuthMapper {
   void insertBinding(Binding binding);
 
   @Select(
-      "SELECT token_hash,app_id,openid,phone,expires_at,consumed_at FROM wechat_binding_challenge"
+      "SELECT token_hash,app_id,openid,expires_at,consumed_at FROM wechat_binding_challenge"
           + " WHERE token_hash=#{hash} FOR UPDATE")
   Binding lockBinding(String hash);
-
-  @Update("UPDATE wechat_binding_challenge SET phone=#{phone} WHERE token_hash=#{hash}")
-  void bindingPhone(@Param("hash") String hash, @Param("phone") String phone);
 
   @Update(
       "UPDATE wechat_binding_challenge SET consumed_at=UTC_TIMESTAMP(3) WHERE token_hash=#{hash}")
   void consumeBinding(String hash);
-
-  @Insert(
-      "INSERT INTO sms_challenge(id,phone,purpose,code_hash,binding_hash,expires_at)"
-          + " VALUES(#{id},#{phone},#{purpose},#{codeHash},#{bindingHash},#{expiresAt})")
-  void insertChallenge(Challenge challenge);
-
-  @Select(
-      "SELECT id,phone,purpose,code_hash,binding_hash,attempts,expires_at,consumed_at FROM"
-          + " sms_challenge WHERE id=#{id} FOR UPDATE")
-  Challenge lockChallenge(String id);
-
-  @Update("UPDATE sms_challenge SET attempts=attempts+1 WHERE id=#{id}")
-  void failed(String id);
-
-  @Update("UPDATE sms_challenge SET consumed_at=UTC_TIMESTAMP(3) WHERE id=#{id}")
-  void consumeChallenge(String id);
 }

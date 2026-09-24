@@ -32,8 +32,7 @@ public class SecurityConfig {
                         "/api/ready",
                         "/api/admin/auth/login",
                         "/api/mini/auth/wechat",
-                        "/api/mini/auth/sms",
-                        "/api/mini/auth/verify",
+                        "/api/mini/auth/bind",
                         "/api/identity/logout")
                     .permitAll()
                     .anyRequest()

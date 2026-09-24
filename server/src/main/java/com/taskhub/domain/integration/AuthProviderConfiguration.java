@@ -41,23 +41,6 @@ public class AuthProviderConfiguration {
     };
   }
 
-  @Bean
-  public SmsProvider smsProvider() {
-    if (!mock)
-      return (phone, code) -> {
-        throw new ApiException(503, 50300, "短信服务尚未配置");
-      };
-    String configured = required("taskhub.auth.mock-sms-code");
-    if (!configured.matches("[0-9]{6}")) throw new IllegalStateException("模拟验证码必须显式配置六位数字");
-    return new SmsProvider() {
-      public void send(String phone, String code) {}
-
-      public String challengeCode() {
-        return configured;
-      }
-    };
-  }
-
   private String required(String key) {
     String value = environment.getProperty(key);
     if (value == null || value.isBlank()) throw new IllegalStateException("模拟身份配置不完整：" + key);

@@ -37,7 +37,4 @@ public final class TokenCodec {
     }
   }
 
-  public static String smsCode() {
-    return String.format("%06d", RANDOM.nextInt(1000000));
-  }
 }

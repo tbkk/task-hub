@@ -20,7 +20,6 @@ class AuthProviderTest {
     assertThrows(IllegalStateException.class, () -> new AuthProviderConfiguration(env));
     env.setActiveProfiles("local");
     var config = new AuthProviderConfiguration(env);
-    assertThrows(IllegalStateException.class, config::smsProvider);
     assertThrows(IllegalStateException.class, config::wechatProvider);
   }
 
@@ -29,8 +28,5 @@ class AuthProviderTest {
     var config = new AuthProviderConfiguration(new MockEnvironment());
     assertThrows(
         com.taskhub.api.ApiException.class, () -> config.wechatProvider().exchange("untrusted"));
-    assertThrows(
-        com.taskhub.api.ApiException.class,
-        () -> config.smsProvider().send("13900000000", "untrusted"));
   }
 }

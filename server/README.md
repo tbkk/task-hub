@@ -35,12 +35,12 @@ CLI 使用 `WebApplicationType.NONE`，不监听 HTTP。事务锁定初始化记
 - token 为32字节随机值，数据库仅存 SHA-256；默认8小时，无自动续期。退出撤销当前会话；改密撤销所有会话；临时密码仅允许 me/password/logout。
 - 员工 CRUD `/api/admin/employees` 及 `/{id}/credentials` 需要 EMPLOYEE_MANAGE ALL。账号停用保留历史授权但拒绝访问。设置临时密码撤销管理会话；授权修改对已登录 token 实时生效。
 - `X-Workspace` 仅选择已有角色，不授予角色。平台能力及各自范围独立，REPORT_VIEW ALL 不扩大 REPORT_EXPORT 的仓库范围；admin 仅派生展示字段。
-- 管理员录入 `phone` 是准入信息；`verifiedPhone` 仅验证码验证后建立，改准入手机号不迁移已验证关系。冲突拒绝自动合并。
-- 登录账号默认5次/15分钟、IP100次/15分钟限频；账号成功登录重置账号计数，IP保留请求计数。短信每号码60秒间隔、10次/小时、每IP30次/小时；验证码5分钟有效、最多5次失败、单次消费。
+- 管理员录入 `phone` 仅作为员工资料；微信首次绑定使用内部账号和密码，冲突拒绝自动合并。
+- 登录账号默认5次/15分钟、IP100次/15分钟限频；账号成功登录重置账号计数，IP保留请求计数。
 
 ## 外部身份模拟边界
 
-未配置真实微信/短信适配器时返回503，不自动降级为模拟。启用模拟必须同时满足 local/test profile 和显式 `taskhub.auth.mock-enabled=true`。prod/production profile 即使同时指定 local 仍拒绝模拟启动。
+未配置真实微信适配器时返回503，不自动降级为模拟。启用模拟必须同时满足 local/test profile 和显式 `taskhub.auth.mock-enabled=true`。prod/production profile 即使同时指定 local 仍拒绝模拟启动。
 
 以下属性通过环境/秘密配置注入，不在仓库写固定码：
 
@@ -50,17 +50,10 @@ CLI 使用 `WebApplicationType.NONE`，不监听 HTTP。事务锁定初始化记
 | `taskhub.auth.mock-wechat-code` | 本地交换入口唯一接受的模拟 code |
 | `taskhub.auth.mock-wechat-openid` | 模拟微信身份，不能由客户端自选员工 ID |
 | `taskhub.auth.mock-wechat-app-id` | 模拟 appId，默认 local-simulator |
-| `taskhub.auth.mock-sms-code` | 开发配置的六位模拟码，API 不返回 |
-| `taskhub.auth.sms-hmac-secret` | 至少32字符的服务端挑战HMAC秘密；需跨重启保留 |
 | `taskhub.auth.session-seconds` | 默认28800 |
 | `taskhub.auth.login-attempts` | 默认5 |
-| `taskhub.auth.sms-ttl-seconds` | 默认300 |
-| `taskhub.auth.sms-interval-seconds` | 默认60 |
-| `taskhub.auth.sms-phone-hour-limit` | 默认10 |
-| `taskhub.auth.sms-ip-hour-limit` | 默认30 |
-| `taskhub.auth.sms-max-attempts` | 默认5 |
 
-可通过 Spring 参数指定非秘密开关，例如 `--spring.profiles.active=local --taskhub.auth.mock-enabled=true`；秘密从环境或私有配置读取。手机号支持大陆11位及 `+86` 前缀并统一规范化。短信 LOGIN 不要求微信；BIND 要求服务器签发的10分钟绑定 token，首次发送即限定手机号，验证成功单次消费。微信/短信 provider 是外部适配接口，实际会话、准入、挑战和绑定均存 MySQL。
+可通过 Spring 参数指定非秘密开关，例如 `--spring.profiles.active=local --taskhub.auth.mock-enabled=true`；秘密从环境或私有配置读取。微信 provider 是外部适配接口，实际会话、准入和绑定均存 MySQL。未绑定微信时，服务端签发十分钟一次性的绑定令牌，用户提交内部账号密码完成绑定。
 
 ## 验证
 
@@ -73,10 +66,10 @@ mvn -Dtest=MigrationIT,IdentityIT,AuthorizationIT,MiniAuthIT test
 
 集成测试拒绝非 `task_hub_*_test` 专用库；测试使用UUID/独立IP数据，不清库。单测覆盖认证边界和生产模拟禁用；真实MySQL测试覆盖HTTP会话、密码、停用、员工版本、能力范围、挑战过期/次数/消费、并发消费、绑定与验证冲突。
 
-本轮实际数据库为本机 MySQL 9.6，目标8.4兼容性尚未实测。微信、短信真实服务和真机验证未执行；模拟通过不代表真实接入完成。后续订单/主数据/审计仍按交付计划实现，本文件不宣称全部业务接口完成。
+本轮实际数据库为本机 MySQL 9.6，目标8.4兼容性尚未实测。微信真实服务和真机验证未执行；模拟通过不代表真实接入完成。后续订单/主数据/审计仍按交付计划实现，本文件不宣称全部业务接口完成。
 
 ### 车辆模拟与站内消息投递
 
 仅 `local` / `test` 可显式配置 `SIMULATOR_ENABLED=true` 使用持久化车辆模拟提供者；生产（包括混合生产 profile）拒绝启用。模拟场景管理要求 `INTEGRATION_MANAGE` 全范围权限，超时记录保持 UNKNOWN，受理不代表门已开或车辆已运行。
 
-`NOTIFICATIONS_ENABLED=true` 启用每3秒一次的持久化事件投递（每批最多100条），默认关闭。失败事件保留并延迟重试，成功通知和投递状态同事务；此项只提供站内消息，不发送业务短信。启动前必须启用并完成数据库迁移。
+`NOTIFICATIONS_ENABLED=true` 启用每3秒一次的持久化事件投递（每批最多100条），默认关闭。失败事件保留并延迟重试，成功通知和投递状态同事务；此项只提供站内消息。启动前必须启用并完成数据库迁移。
