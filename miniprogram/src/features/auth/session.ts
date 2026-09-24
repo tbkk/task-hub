@@ -1,5 +1,5 @@
 import { shallowRef } from 'vue'
-import { exchangeWechat, fetchIdentity, logout, requestSms, verifySms } from './api'
+import { changePassword, exchangeWechat, fetchIdentity, loginWithPassword, logout, requestSms, verifySms } from './api'
 import { createMockAuth } from './mock'
 import type { Identity, Session, SmsPurpose } from './model'
 import { workspace, rememberWorkspace } from '../workspace/store'
@@ -145,6 +145,17 @@ export async function startWechatLogin(isActive: () => boolean = () => true): Pr
   if (!isActive()) throw new Error('登录已取消，请重新登录')
   pendingBinding.value = result.bindingToken
   return result.status
+}
+
+export async function signInWithPassword(username: string, password: string, isActive: () => boolean = () => true) {
+  const session = await loginWithPassword(username.trim(), password)
+  if (!acceptSession(session, isActive)) throw new Error('登录已取消，请重新登录')
+  return session
+}
+
+export async function updatePassword(currentPassword: string, newPassword: string) {
+  await changePassword(currentPassword, newPassword)
+  clearLocalSession()
 }
 
 export async function sendCode(phone: string, purpose: SmsPurpose) {

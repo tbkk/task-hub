@@ -1,5 +1,6 @@
 {
   "pages": [
+    { "path": "pages/password/index", "style": { "navigationBarTitleText": "修改密码", "navigationStyle": "custom" } },
     {
       "path": "pages/login/index",
       "style": {

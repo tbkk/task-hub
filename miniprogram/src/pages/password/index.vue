@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import BaseButton from '@/components/BaseButton.vue'
+import { currentUser, updatePassword } from '@/features/auth/session'
+const current=ref(''),next=ref(''),confirm=ref(''),error=ref(''),busy=ref(false)
+async function submit(){error.value='';if(!current.value||next.value.length<12){error.value='请输入当前密码，新密码至少 12 个字符';return}if(next.value!==confirm.value){error.value='两次新密码输入不一致';return}if(next.value===current.value){error.value='新密码不能与当前密码相同';return}busy.value=true;try{await updatePassword(current.value,next.value);uni.reLaunch({url:'/pages/login/index'})}catch(e){error.value=e instanceof Error?e.message:'修改失败，请重试'}finally{busy.value=false}}
+</script>
+<template><view class="password-page"><view class="top">首次登录需要修改密码</view><view class="content"><text class="title">你好，{{currentUser?.name||'员工'}}</text><text class="hint">管理员设置的是临时密码，请先修改后继续使用。</text><input v-model="current" type="password" password placeholder="当前密码" :disabled="busy"/><input v-model="next" type="password" password placeholder="新密码（至少 12 个字符）" :disabled="busy"/><input v-model="confirm" type="password" password placeholder="确认新密码" :disabled="busy"/><text v-if="error" class="error">{{error}}</text><BaseButton :loading="busy" @click="submit">保存新密码</BaseButton></view></view></template>
+<style scoped lang="scss">.password-page{min-height:100vh;background:#f6f8fb}.top{padding:calc(env(safe-area-inset-top) + 22px) 20px 18px;background:#fff;font-size:18px;font-weight:700}.content{display:flex;flex-direction:column;gap:14px;padding:34px 20px}.title{font-size:24px;font-weight:700}.hint{color:#667387;font-size:13px;line-height:20px;margin-bottom:8px}input{height:46px;padding:0 14px;background:#fff;border-radius:8px;font-size:14px}.error{color:#d92d20;font-size:13px;line-height:20px}</style>

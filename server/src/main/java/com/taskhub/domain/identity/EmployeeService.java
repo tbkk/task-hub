@@ -161,7 +161,9 @@ public class EmployeeService {
       throw new ApiException(409, 40900, "用户名已使用");
     if (credentials.byEmployee(id) == null) credentials.insert(id, username, hash, true);
     else credentials.update(id, username, hash, true);
-    sessions.revokeAdmin(id);
+    // A credential reset invalidates every channel so an old token cannot keep
+    // accessing the account after the administrator assigns a new password.
+    sessions.revokeAll(id);
   }
 
   private EmployeeInput validate(Actor actor, EmployeeInput input, String previousWarehouse) {
