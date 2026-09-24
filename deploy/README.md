@@ -26,13 +26,13 @@ cd /Users/qin/Projects/task-hub
 
 需要 Node.js 22.12+、npm、Java 17、Maven、Python 3、Nginx、curl、lsof 和可连接的 MySQL。脚本不自动安装依赖；首次分别在 `admin-web`、`miniprogram` 执行 `npm ci`。默认 Nginx MIME 文件为 `/opt/homebrew/etc/nginx/mime.types`，其他安装方式可用 `TASKHUB_DEPLOY_MIME_TYPES` 指定。
 
-本机此次已经生成根 `.env.local`（权限 600），复用 `task_hub_demo_test`。新环境复制 `deploy/local.env.example` 到根 `.env.local`，填写数据库连接、六位 `TASKHUB_AUTH_MOCK_SMS_CODE`、`TASKHUB_AUTH_SMS_HMAC_SECRET`（可用 `openssl rand -hex 32` 生成）、本地 `TASKHUB_AUTH_MOCK_WECHAT_CODE` 和 `TASKHUB_AUTH_MOCK_WECHAT_OPENID`。示例不含实际验证码、密码或秘密。
+本机此次已经生成根 `.env.local`（权限 600），复用 `task_hub_demo_test`。新环境复制 `deploy/local.env.example` 到根 `.env.local`，填写数据库连接、本地 `TASKHUB_AUTH_MOCK_WECHAT_CODE` 和 `TASKHUB_AUTH_MOCK_WECHAT_OPENID`。示例不含实际密码或秘密。
 
 配置只支持白名单 `KEY=VALUE` 和成对单/双引号；不支持 export、行尾注释、变量展开或命令替换。文件不存在时可完全通过环境传入；已经导出的同名环境变量优先。`TASKHUB_DEPLOY_ENV_FILE` 可指定其他配置文件。端口可通过示例中的三个 `TASKHUB_DEPLOY_*_PORT` 调整。改运行目录会建立另一个实例，应先停止原运行目录对应实例。
 
-脚本固定后端 local profile，启用模拟身份、模拟车辆和站内消息投递，Java 端仅监听 127.0.0.1；两个前端固定 `/api`，H5 使用服务端认证。业务数据真实落库；模拟码不会发送短信。HMAC 秘密跨重启保留，修改会使旧挑战验证失效。此脚本只用于本地实验。
+脚本固定后端 local profile，启用模拟身份、模拟车辆和站内消息投递，Java 端仅监听 127.0.0.1；两个前端固定 `/api`，H5 使用服务端认证。业务数据真实落库。此脚本只用于本地实验。
 
-管理端使用已有内部账号密码，不自动重设或初始化管理员。H5 使用「手机号验证码登录」，输入已准入员工手机号，获取验证码后填写 `.env.local` 中的模拟码。微信真实登录 provider 尚未实现，不使用微信登录按钮验证真实身份。
+管理端使用已有内部账号密码，不自动重设或初始化管理员。H5 使用内部账号密码登录。微信真实登录 provider 尚未实现，不使用微信登录按钮验证真实身份。
 
 ### 产物、失败与恢复
 
@@ -54,7 +54,7 @@ Flyway 在 local 启动时执行增量升级，不清库、不重建库、不注
 VITE_AUTH_MOCK=false VITE_API_BASE_URL=http://127.0.0.1:18090/api npm run dev:mp-weixin
 ```
 
-配置自己的 AppID 后，开发者工具导入 `miniprogram/`，指向 `dist/dev/mp-weixin/`；本机调试关闭合法域名校验，使用手机号验证码登录。此地址仅用于电脑模拟器，手机真机需要手机可达的接口地址及相应域名/HTTPS配置。
+配置自己的 AppID 后，开发者工具导入 `miniprogram/`，指向 `dist/dev/mp-weixin/`；本机调试关闭合法域名校验，使用内部账号密码登录。此地址仅用于电脑模拟器，手机真机需要手机可达的接口地址及相应域名/HTTPS配置。
 
 ### 验证范围
 
@@ -96,7 +96,7 @@ docker compose --env-file deploy/.env -f deploy/compose.yaml down
 
 停止不会删除命名数据卷。`database/init/` 仅在空数据目录初始化时运行；已有数据库需显式执行后续迁移。不要使用 `down -v` 清理有业务数据的环境。
 
-`.env` 不提交，前端 `VITE_*` 变量会打包进客户端，不能存放微信、短信、九识凭证。小程序不是 Nginx 部署产物，应由微信开发者工具上传，并使用已配置合法域名的 HTTPS 后端地址。
+`.env` 不提交，前端 `VITE_*` 变量会打包进客户端，不能存放微信、九识凭证。小程序不是 Nginx 部署产物，应由微信开发者工具上传，并使用已配置合法域名的 HTTPS 后端地址。
 
 ## 验证边界
 

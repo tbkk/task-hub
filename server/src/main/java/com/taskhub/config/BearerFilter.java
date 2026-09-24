@@ -33,8 +33,7 @@ public class BearerFilter extends OncePerRequestFilter {
                 "/api/ready",
                 "/api/admin/auth/login",
                 "/api/mini/auth/wechat",
-                "/api/mini/auth/sms",
-                "/api/mini/auth/verify",
+                "/api/mini/auth/bind",
                 "/api/identity/logout")
             .contains(path);
     if (!publicPath && header != null) {

@@ -125,7 +125,7 @@ WHERE id=#{id} AND consumed_at IS NULL AND expires_at>UTC_TIMESTAMP(3) AND attem
 ```
 
 - [ ] `mvn -Pmysql-it -Dtest=MiniAuthIT test` 红灯；实现上述单次消费与发送限频行锁，失败次数独立事务提交。手机号按大陆手机号基线验证，区号规范化统一，不用不同字符串逃过唯一约束。
-- [ ] 短信登录无 bindingToken；微信绑定必须匹配有效 token 和消费后的验证手机号。mock code 从 local 环境取，API 不回传，不使用前端自选员工 ID 来建立正式会话。
+- [x] 短信登录与验证码绑定已移除；微信绑定必须匹配有效的一次性 bindingToken 和内部账号密码，不使用前端自选员工 ID 来建立正式会话。
 - [ ] 运行同测试，刷新服务进程后未过期挑战/会话仍可正确检查；review 确认没有内存身份库。
 
 ## S05：主数据、点位可达与版本化规则

@@ -18,7 +18,7 @@
 
 ## 模块边界
 
-后端在 `com.taskhub.domain` 下预留 identity（身份、多角色及逐角色数据范围）、masterdata（仓库/点位/车辆/格口）、order、batch、dispatch、vehicle、ticket、notification、report、audit、integration（九识/微信/验证码）。模块当前仅有包说明，不暴露业务端点。
+后端在 `com.taskhub.domain` 下预留 identity（身份、多角色及逐角色数据范围）、masterdata（仓库/点位/车辆/格口）、order、batch、dispatch、vehicle、ticket、notification、report、audit、integration（九识/微信）。模块当前仅有包说明，不暴露业务端点。
 
 小程序业务分包预留申请/订单/取货、审批/批次/装货/工单、调度/车辆、概览/业务记录。管理端仅放账户、人员、权限、基础资料、营业规则、参数、既有接入、报表和审计，不放日常审批、派单、控制入口。
 
@@ -28,7 +28,7 @@
 - ID（尤其 `dispatchId`）传输为字符串，后端统一序列化 Long；客户端不转换为 Number。
 - `GET /api/health` 仅说明进程存活；`GET /api/ready` 使用 MyBatis 查询初始化元数据，数据库不可用返回 HTTP 503。
 - 初始化阶段仅上述两个接口匿名可访问，其他接口默认拒绝。正式鉴权、角色与数据范围校验在身份模块实施，不用前端路由作为安全边界。
-- 九识、微信和短信凭证只在服务端管理，本次不建立虚假控制接口、不连接真实车辆。
+- 九识和微信凭证只在服务端管理，本次不建立虚假控制接口、不连接真实车辆。
 - 本地开发环境可不启动数据库验证存活；就绪接口和部署健康检查要求数据库已初始化。
 
 ## 验证标准

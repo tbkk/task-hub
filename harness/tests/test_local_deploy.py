@@ -37,8 +37,6 @@ class DeployTests(unittest.TestCase):
         for s in sockets:
             s.close()
         self.envfile.write_text('MYSQL_DATABASE=task_hub_demo_test\nMYSQL_USER=root\n'
-                               'TASKHUB_AUTH_MOCK_SMS_CODE=123456\n'
-                               'TASKHUB_AUTH_SMS_HMAC_SECRET=' + 'x'*32 + '\n'
                                'TASKHUB_AUTH_MOCK_WECHAT_CODE=test\nTASKHUB_AUTH_MOCK_WECHAT_OPENID=test\n'
                                f'TASKHUB_DEPLOY_ADMIN_PORT={ports[0]}\nTASKHUB_DEPLOY_H5_PORT={ports[1]}\n'
                                f'TASKHUB_DEPLOY_SERVER_PORT={ports[2]}\n')
@@ -176,8 +174,6 @@ class DeployTests(unittest.TestCase):
         listener.bind(('127.0.0.1', 0))
         listener.listen()
         self.envfile.write_text('MYSQL_DATABASE=task_hub_demo_test\nMYSQL_USER=root\n'
-                               'TASKHUB_AUTH_MOCK_SMS_CODE=123456\n'
-                               'TASKHUB_AUTH_SMS_HMAC_SECRET=' + 'x'*32 + '\n'
                                'TASKHUB_AUTH_MOCK_WECHAT_CODE=test\nTASKHUB_AUTH_MOCK_WECHAT_OPENID=test\n')
         result = self.run_cli('restart', TASKHUB_DEPLOY_ADMIN_PORT=str(listener.getsockname()[1]))
         self.assertIn('被其他进程占用', result.stderr)
@@ -204,8 +200,6 @@ class DeployTests(unittest.TestCase):
             listener.bind(('127.0.0.1', 0))
             port = listener.getsockname()[1]
         self.envfile.write_text('MYSQL_DATABASE=task_hub_demo_test\nMYSQL_USER=root\n'
-                               'TASKHUB_AUTH_MOCK_SMS_CODE=123456\n'
-                               'TASKHUB_AUTH_SMS_HMAC_SECRET=' + 'x'*32 + '\n'
                                'TASKHUB_AUTH_MOCK_WECHAT_CODE=test\nTASKHUB_AUTH_MOCK_WECHAT_OPENID=test\n')
         conf = root / 'nginx/nginx.conf'
         conf.write_text(f'pid "{root}/nginx/nginx.pid";\nerror_log "{root}/nginx/error.log";\n'

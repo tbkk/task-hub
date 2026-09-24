@@ -22,7 +22,7 @@ type PlatformCapability = 'EMPLOYEE_MANAGE'|'MASTERDATA_MANAGE'|'RULE_MANAGE'|'I
 type PlatformGrant = {capability:PlatformCapability;scope:'WAREHOUSES'|'ALL';warehouseIds:string[]};
 type Identity = {id:string;name:string;verifiedPhone:string|null;grants:Grant[];platformGrants:PlatformGrant[];admin:boolean;mustChangePassword:boolean};
 type Session = {token:string;expiresAt:string;user:Identity};
-type WechatExchange = {status:'AUTHENTICATED';session:Session}|{status:'PHONE_REQUIRED';bindingToken:string;expiresAt:string};
+type WechatExchange = {status:'AUTHENTICATED';session:Session}|{status:'CREDENTIALS_REQUIRED';bindingToken:string;expiresAt:string};
 ```
 
 | 方法/路径 | 请求 | 成功 data / 约束 |
@@ -33,10 +33,9 @@ type WechatExchange = {status:'AUTHENTICATED';session:Session}|{status:'PHONE_RE
 | POST `/identity/password` | `{currentPassword,newPassword}` | `null`；修改后撤销全部会话，重新登录 |
 | POST `/admin/employees/{id}/credentials` | `{username,temporaryPassword}` | `null`；管理员重置后设置 `mustChangePassword=true`，撤销该员工全部会话，不回显密码 |
 | POST `/mini/auth/wechat` | `{code}` | `WechatExchange`；模拟 code 仅 local/test 提供者接受 |
-| POST `/mini/auth/sms` | `{phone,purpose:'LOGIN'|'BIND',bindingToken?:string}` | `{challengeId,retryAfterSeconds,expiresAt}`；不返回验证码 |
-| POST `/mini/auth/verify` | `{challengeId,phone,code,bindingToken?:string}` | `Session`；验证码单次消费，BIND 必须验证绑定 token |
+| POST `/mini/auth/bind` | `{bindingToken,username,password}` | `Session`；绑定令牌十分钟有效且只能消费一次，账号必须已完成首次改密 |
 
-密码登录是小程序默认入口，不依赖短信。短信登录接口保留兼容旧客户端和绑定流程；绑定微信必须具有服务端生成的短期绑定 token。模拟验证码从本地环境配置加载，不写到版本库或普通日志。临时密码会话只允许身份查询、改密和退出。
+密码登录是小程序默认入口。未绑定微信时，服务端返回短期绑定令牌，小程序提交内部账号密码完成绑定；绑定令牌不在页面展示。临时密码会话只允许身份查询、改密和退出。
 
 员工 `homeWarehouseId` 为管理员配置的所属仓库，迁移期可空；工人申请只允许该启用仓库，未配置返回空目录并提示联系管理员。`worker` 的 SELF 与空 `warehouseIds` 表示本人订单范围，不承担仓库归属。
 
@@ -158,7 +157,7 @@ type History = {id:string;objectType:string;objectId:string;action:string;actorN
 
 ## 本地模拟器与生产边界
 
-`POST /api/dev/simulator/events` 仅 local/test、ADMIN、显式 `SIMULATOR_ENABLED=true`：`{eventId,vehicleId,dispatchId,reportedAt,businessStatus,currentStopId,nextStopId,online,speed,doors}`；走相同持久化事件处理器，支持重复、乱序、过期、门未知。`PUT /api/dev/simulator/scenario` 输入 `{operation:'DISPATCH'|'OPEN'|'GO'|'CANCEL',outcome:'ACCEPTED'|'FAILED'|'TIMEOUT'}`；场景保存在 MySQL，不用内存业务仓库。生产 profile 不注册上述 controller，启动检查拒绝 mock 身份、短信和车辆模式。实际微信/短信/车辆凭证未到位仅完成适配器边界和模拟验证，不标记真实接入通过。
+`POST /api/dev/simulator/events` 仅 local/test、ADMIN、显式 `SIMULATOR_ENABLED=true`：`{eventId,vehicleId,dispatchId,reportedAt,businessStatus,currentStopId,nextStopId,online,speed,doors}`；走相同持久化事件处理器，支持重复、乱序、过期、门未知。`PUT /api/dev/simulator/scenario` 输入 `{operation:'DISPATCH'|'OPEN'|'GO'|'CANCEL',outcome:'ACCEPTED'|'FAILED'|'TIMEOUT'}`；场景保存在 MySQL，不用内存业务仓库。生产 profile 不注册上述 controller，启动检查拒绝 mock 身份和车辆模式。实际微信/车辆凭证未到位仅完成适配器边界和模拟验证，不标记真实接入通过。
 
 ## 仓库装货点绑定补充（S13派发前置）
 

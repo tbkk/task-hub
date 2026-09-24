@@ -22,7 +22,7 @@ if [[ -f "$env_file" ]]; then
     [[ "$line" == *=* ]] || fail '配置必须为 KEY=VALUE'
     key="${line%%=*}"; value="${line#*=}"
     case "$key" in
-      TASKHUB_DEPLOY_RUNTIME|TASKHUB_DEPLOY_ADMIN_PORT|TASKHUB_DEPLOY_H5_PORT|TASKHUB_DEPLOY_SERVER_PORT|TASKHUB_DEPLOY_NGINX_BIN|TASKHUB_DEPLOY_MIME_TYPES|MYSQL_HOST|MYSQL_PORT|MYSQL_DATABASE|MYSQL_USER|MYSQL_PASSWORD|TASKHUB_AUTH_MOCK_SMS_CODE|TASKHUB_AUTH_SMS_HMAC_SECRET|TASKHUB_AUTH_MOCK_WECHAT_CODE|TASKHUB_AUTH_MOCK_WECHAT_OPENID) ;;
+      TASKHUB_DEPLOY_RUNTIME|TASKHUB_DEPLOY_ADMIN_PORT|TASKHUB_DEPLOY_H5_PORT|TASKHUB_DEPLOY_SERVER_PORT|TASKHUB_DEPLOY_NGINX_BIN|TASKHUB_DEPLOY_MIME_TYPES|MYSQL_HOST|MYSQL_PORT|MYSQL_DATABASE|MYSQL_USER|MYSQL_PASSWORD|TASKHUB_AUTH_MOCK_WECHAT_CODE|TASKHUB_AUTH_MOCK_WECHAT_OPENID) ;;
       *) fail '配置项不在允许列表中';;
     esac
     if [[ "$value" == \"*\" || "$value" == \'*\' ]]; then value="${value:1:${#value}-2}"; fi
@@ -142,9 +142,6 @@ preflight() {
   for dep in java curl lsof ps; do require "$dep"; done
   [[ -x "$nginx_bin" ]] || fail '未找到 Nginx，请安装或配置 TASKHUB_DEPLOY_NGINX_BIN'
   [[ -n "${MYSQL_DATABASE:-}" && -n "${MYSQL_USER:-}" ]] || fail '请在 .env.local 配置 MYSQL_DATABASE 和 MYSQL_USER'
-  [[ "${TASKHUB_AUTH_MOCK_SMS_CODE:-}" =~ ^[0-9]{6}$ ]] || fail '请配置六位模拟短信码'
-  local secret="${TASKHUB_AUTH_SMS_HMAC_SECRET:-}"
-  [[ ${#secret} -ge 32 ]] || fail '请配置至少32字符 HMAC 秘密'
   [[ -n "${TASKHUB_AUTH_MOCK_WECHAT_CODE:-}" && -n "${TASKHUB_AUTH_MOCK_WECHAT_OPENID:-}" ]] || fail '请配置本地模拟微信身份'
   port_free_or_owned "$admin_port" nginx
   port_free_or_owned "$h5_port" nginx

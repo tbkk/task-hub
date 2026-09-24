@@ -1,18 +1,15 @@
 import { shallowRef } from 'vue'
-import { changePassword, exchangeWechat, fetchIdentity, loginWithPassword, logout, requestSms, verifySms } from './api'
+import { bindWechat as bindWechatApi, changePassword, exchangeWechat, fetchIdentity, loginWithPassword, logout } from './api'
 import { createMockAuth } from './mock'
-import type { Identity, Session, SmsPurpose } from './model'
+import type { Identity, Session } from './model'
 import { workspace, rememberWorkspace } from '../workspace/store'
 import { sessionToken, setSessionInvalidationHandler, setAuthorizationChangeHandler } from '../../services/session'
 
 const env = import.meta.env ?? {}
 export const mockEnabled = env.VITE_AUTH_MOCK === 'true'
-export const mockCode = env.VITE_AUTH_MOCK_CODE || ''
-if (mockEnabled && !mockCode) throw new Error('演示模式必须配置 VITE_AUTH_MOCK_CODE')
-const mock = createMockAuth({ code: mockCode || undefined })
+const mock = createMockAuth()
 export const currentUser = shallowRef<Identity | null>(null)
 export const pendingBinding = shallowRef<string | null>(null)
-const pendingChallenge = shallowRef<{ id: string; phone: string; purpose: SmsPurpose; retryAt: number } | null>(null)
 let refreshPromise: Promise<Identity> | null = null
 let invalidationRedirected = false
 
@@ -74,7 +71,6 @@ export function acceptSession(session: Session, isActive: () => boolean = () => 
   persistStoredSession(session)
   applyIdentity(session.user)
   pendingBinding.value = null
-  pendingChallenge.value = null
   invalidationRedirected = false
   return true
 }
@@ -84,7 +80,6 @@ export function clearLocalSession() {
   clearStoredSession()
   currentUser.value = null
   pendingBinding.value = null
-  pendingChallenge.value = null
   refreshPromise = null
   workspace.reset()
 }
@@ -99,7 +94,6 @@ export function restoreSession(now = Date.now()) {
   sessionToken.set(stored.token, stored.expiresAt)
   applyIdentity(stored.user)
   pendingBinding.value = null
-  pendingChallenge.value = null
   refreshPromise = null
   invalidationRedirected = false
   return true
@@ -130,12 +124,12 @@ function wechatCode() {
   })
 }
 
-export async function startWechatLogin(isActive: () => boolean = () => true): Promise<'AUTHENTICATED' | 'PHONE_REQUIRED'> {
+export async function startWechatLogin(isActive: () => boolean = () => true): Promise<'AUTHENTICATED' | 'CREDENTIALS_REQUIRED'> {
   if (mockEnabled) {
     const bindingToken = await mock.wechatLogin()
     if (!isActive()) throw new Error('登录已取消，请重新登录')
     pendingBinding.value = bindingToken
-    return 'PHONE_REQUIRED'
+    return 'CREDENTIALS_REQUIRED'
   }
   const result = await exchangeWechat(await wechatCode())
   if (result.status === 'AUTHENTICATED') {
@@ -158,29 +152,15 @@ export async function updatePassword(currentPassword: string, newPassword: strin
   clearLocalSession()
 }
 
-export async function sendCode(phone: string, purpose: SmsPurpose) {
-  if (purpose === 'BIND' && !pendingBinding.value) throw new Error('请返回重新进行微信登录')
-  if (mockEnabled) {
-    const result = await mock.sendCode(phone)
-    pendingChallenge.value = { id: result.challengeId, phone, purpose, retryAt: result.retryAt }
-    return result
-  }
-  const result = await requestSms(phone, purpose, purpose === 'BIND' ? pendingBinding.value ?? undefined : undefined)
-  pendingChallenge.value = { id: result.challengeId, phone, purpose, retryAt: Date.now() + result.retryAfterSeconds * 1000 }
-  return result
-}
-
-export async function signIn(phone: string, code: string, purpose: SmsPurpose, isActive: () => boolean = () => true) {
-  const challenge = pendingChallenge.value
-  if (!challenge || challenge.phone !== phone || challenge.purpose !== purpose) throw new Error('请先获取验证码')
+export async function bindWechat(username: string, password: string, isActive: () => boolean = () => true) {
+  if (!pendingBinding.value) throw new Error('请返回重新进行微信登录')
+  const token = pendingBinding.value
   let session: Session
   if (mockEnabled) {
-    const user = await mock.verify(phone, code, purpose === 'BIND' ? pendingBinding.value ?? undefined : undefined)
+    const user = await mock.bindCredentials(username, password)
     session = { token: `mock-session-${user.id}`, expiresAt: new Date(Date.now() + 8 * 3600000).toISOString(), user }
-  } else {
-    session = await verifySms({ challengeId: challenge.id, phone, code, ...(purpose === 'BIND' && pendingBinding.value ? { bindingToken: pendingBinding.value } : {}) })
-  }
-  if (!acceptSession(session, isActive)) throw new Error('登录已取消，请重新获取验证码')
+  } else session = await bindWechatApi(token, username, password)
+  if (!acceptSession(session, isActive)) throw new Error('登录已取消，请重新进行微信绑定')
 }
 
 export async function refreshIdentity() {
@@ -211,7 +191,6 @@ export async function signOut() {
   }
 }
 
-export function getCodeRetryAt(phone: string) { return pendingChallenge.value?.phone === phone ? pendingChallenge.value.retryAt : 0 }
 export function failNextMockRequest(failure: 'network' | 'cancel') {
   if (!mockEnabled) throw new Error('仅演示模式支持失败场景')
   mock.failNext(failure)

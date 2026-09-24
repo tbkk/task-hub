@@ -93,11 +93,11 @@ test('真实微信登录使用 uni.login code 交换且不在客户端指定员�
     login(options: { success: (result: { code: string }) => void }) { options.success({ code: 'wx-temporary-code' }) },
     request(options: { data: unknown; success: (response: unknown) => void }) {
       requestData = options.data
-      options.success({ statusCode: 200, data: { code: 0, message: 'ok', data: { status: 'PHONE_REQUIRED', bindingToken: 'bind-1', expiresAt: '2026-09-20T10:05:00+08:00' } } })
+      options.success({ statusCode: 200, data: { code: 0, message: 'ok', data: { status: 'CREDENTIALS_REQUIRED', bindingToken: 'bind-1', expiresAt: '2026-09-20T10:05:00+08:00' } } })
     },
   }
   const { pendingBinding, startWechatLogin } = await import('../src/features/auth/session')
-  assert.equal(await startWechatLogin(), 'PHONE_REQUIRED')
+  assert.equal(await startWechatLogin(), 'CREDENTIALS_REQUIRED')
   assert.deepEqual(requestData, { code: 'wx-temporary-code' })
   assert.equal(pendingBinding.value, 'bind-1')
 })
